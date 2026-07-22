@@ -436,70 +436,403 @@ const ENTREGAVEIS = [
     prompts: [
       {
         label: "Prompt para o Lovable",
-        texto: `Crie um site institucional moderno e profissional para um escritório de contabilidade chamado [NOME DO ESCRITÓRIO], localizado em [CIDADE/UF].
+        texto: `# Prompt para Lovable.dev — Novo site Consultem Contabilidade (v2, com regras anti-bug)
 
-ESTRUTURA DO SITE:
-1. Hero com headline forte sobre contabilidade consultiva com tecnologia e IA, subtítulo e botão "Fale com um especialista" (link para WhatsApp: [SEU LINK WA.ME])
-2. Seção "Serviços" com cards: Abertura de Empresa, Contabilidade Mensal, Planejamento Tributário, Departamento Pessoal, BPO Financeiro e Consultoria com IA
-3. Seção "Por que nos escolher" com 4 diferenciais (atendimento humanizado, tecnologia, agilidade, transparência)
-4. Seção "Depoimentos" com 3 depoimentos de clientes
-5. Seção "Sobre" com breve história do escritório
-6. FAQ com 5 perguntas frequentes sobre troca de contador, MEI, Simples Nacional
-7. Rodapé com endereço, CRC, redes sociais e botão flutuante de WhatsApp
+## PROMPT (copiar tudo abaixo desta linha)
 
-DESIGN:
-- Paleta: azul-escuro profissional, branco e um tom dourado como destaque
-- Tipografia moderna e legível, visual clean e confiável
-- Totalmente responsivo (mobile-first)
-- Animações suaves ao rolar a página
+Você vai construir o novo site institucional da **Consultem — Gestão Contábil de Empresas e Negócios**, escritório de contabilidade em Conceição do Coité-BA. Já existe um site atual com identidade visual consolidada e arquitetura de informação definida — sua missão é **recriar essa mesma estrutura e identidade, mas com execução visual e técnica de nível muito superior**: animações fluidas, transições modernas, microinterações refinadas. O site atual parece um template de WordPress; o novo deve parecer um produto digital feito sob medida.
 
-IMPORTANTE:
-- Todos os botões de contato devem apontar para o WhatsApp
-- Textos em português do Brasil, tom profissional e acolhedor
-- Otimizado para SEO local (contabilidade em [CIDADE])`
+Objetivo duplo: autoridade institucional + geração de leads (WhatsApp e formulários).
+
+---
+
+### 0. REGRAS INVIOLÁVEIS — leia antes de qualquer decisão de design
+
+Estas duas categorias de erro ocorreram na geração anterior e são **inaceitáveis**. Trate-as como restrições de nível máximo, acima de qualquer preferência estética:
+
+**A) Contraste de texto — nunca texto branco sobre fundo claro:**
+- A cor do texto de CADA seção deve ser definida junto com a cor de fundo daquela seção, nunca herdada globalmente. Regra fixa de pareamento:
+  - Fundo navy escuro (\`#2E4A62\` a \`#1F3A50\`) → headlines em branco \`#FFFFFF\`, corpo em \`#E8EDF2\`, destaques em amarelo \`#F7C325\`
+  - Fundo branco, off-white ou cinza claro (\`#EFEFEF\`) → headlines em navy \`#2E4A62\`, corpo em \`#3D4B58\`, destaques em amarelo escurecido \`#C99B12\` (o amarelo \`#F7C325\` puro NÃO tem contraste suficiente para texto sobre fundo claro — use-o em fundo claro apenas em botões/formas, nunca em texto)
+  - Fundo amarelo (\`#F7C325\`, seção Instagram) → todo texto em navy \`#2E4A62\`
+- É PROIBIDO usar \`text-white\` (ou branco em qualquer forma) em seções com fundo branco/claro. Antes de finalizar, faça uma varredura seção por seção verificando o par fundo × texto de cada uma — inclusive nos estados de hover, nos cards internos e nos textos sobre overlays.
+- Texto sobre foto só é permitido com overlay navy em gradiente garantindo contraste AA; nunca texto direto sobre imagem.
+- Componentes de UI (shadcn ou similares) que assumem tema escuro/claro global devem ter as cores explicitamente sobrescritas por seção — não confie no default do tema.
+
+**B) Overflow horizontal e responsividade — a página NUNCA pode rolar para o lado:**
+- Nenhuma seção pode gerar scroll horizontal na página em NENHUMA largura de tela (teste mental: 320px, 375px, 768px, 1024px, 1440px). Aplique \`overflow-x: clip\` no wrapper de cada seção que contenha carousel, formas decorativas ou elementos com parallax, e garanta \`overflow-x: hidden\` no body como rede de segurança final — mas a correção real deve ser feita na causa, não só mascarada no body.
+- **Carousel de serviços (seção 3.2) — causa do bug anterior:** o track do carousel deve ficar contido dentro de um viewport próprio com \`overflow: hidden\`; os cards fora da área visível NÃO podem empurrar a largura da página. Use largura de card fluida (\`min()\` / porcentagem / clamp), nunca largura fixa em px que some além da viewport. No mobile (<768px), o carousel vira scroll-snap horizontal nativo (\`scroll-snap-type: x mandatory\`) contido na própria seção, com 1 card + espiar do próximo (\`~85vw\` por card), sem drag JS complexo.
+- Formas decorativas (semicírculos navy, blobs amarelos) que vazam para fora da seção devem estar em containers com \`overflow: clip\` ou posicionadas com \`inset\` negativo dentro de wrapper clipado — nunca podem expandir a largura do documento.
+- Elementos com parallax/transform não podem criar largura extra: anime apenas \`transform\` dentro de containers clipados.
+- Todas as seções devem ser construídas mobile-first e verificadas nos breakpoints: 320px, 375px, 768px, 1024px e 1440px. Grids de cards: 1 coluna no mobile, 2 no tablet, 3 no desktop. Tipografia com \`clamp()\` para escalar sem quebrar.
+- Ao final da implementação, faça uma passada de QA explícita: (1) verificar par fundo × texto de cada seção; (2) verificar ausência de scroll horizontal em cada breakpoint listado; (3) verificar o carousel de serviços especificamente no mobile.
+
+---
+
+### 1. Identidade visual (MANTER — é a marca existente)
+
+**Paleta:**
+- Azul petróleo/navy: \`#2E4A62\` (variações até \`#1F3A50\` para fundos escuros) — cor institucional principal
+- Amarelo dourado: \`#F7C325\` — cor de acento, CTAs e destaques em headlines
+- Cinza claro: \`#EFEFEF\` para fundo do header e seções neutras
+- Branco e off-white para respiros
+- Texto sobre fundo escuro: branco puro nos headlines, \`#E8EDF2\` no corpo
+
+**Tipografia:**
+- Manter a família geométrica arredondada do site atual (Poppins) para continuidade da marca, MAS elevar o tratamento tipográfico: hierarquia mais dramática (headlines maiores, 56–72px desktop), tracking ajustado, pesos contrastantes (Bold nos títulos, Regular/Light no corpo), line-height respirado (1.6–1.7 no corpo)
+- Padrão de destaque nos headlines: palavras-chave em amarelo dentro de frase branca/navy (ex: "Uma **gestão contábil** transparente e responsável") — manter esse padrão, é assinatura da marca
+
+**Linguagem de formas (assinatura visual do site atual — manter e refinar):**
+- Formas circulares e orgânicas grandes: semicírculos navy nas bordas das seções, blobs amarelos atrás de fotos, molduras em arco para retratos
+- Padrão de ondas/pontos sutis em fundos navy (como no hero atual)
+- Refinar: essas formas devem ter **parallax sutil no scroll** (velocidades diferentes do conteúdo), criando profundidade
+
+**Logo:** "C" circular em navy com detalhe amarelo + wordmark "CONSULTEM / GESTÃO CONTÁBIL DE EMPRESAS E NEGÓCIOS". Use placeholder fiel a isso; a logo real será enviada depois.
+
+### 2. Estrutura de navegação (MANTER)
+
+Navbar: **Serviços** (dropdown) | **Segmentos** (dropdown) | **Conteúdos** (dropdown) | **Abrir conta PJ** | **Sobre nós** | botão destacado **ÁREA VIP** (navy, canto direito).
+
+Melhorias na navbar:
+- Sticky com transição: começa sobre fundo cinza claro; ao rolar, encolhe suavemente e ganha fundo com blur (glassmorphism sutil) e sombra leve
+- Dropdowns com animação de entrada (fade + slide 8px, stagger nos itens)
+- Indicador de página ativa com underline animado em amarelo
+
+### 3. Estrutura de seções (mesma do site atual, execução elevada)
+
+**3.1 Hero**
+- Fundo navy escuro com padrão de ondas/pontos animado sutilmente (movimento lento, quase imperceptível)
+- Headline: "Uma **gestão contábil** transparente e responsável" (destaques em amarelo) — entrada com split-text animado por palavra (stagger, easing suave), NUNCA com palavras se sobrepondo
+- Subtítulo: "Cada empresa é única, e na Consultem, acreditamos que suas soluções contábeis devem refletir essa singularidade."
+- CTA amarelo "CONHEÇA A CONSULTEM" com hover magnético sutil e microanimação de preenchimento
+- À direita: retrato do contador em composição orgânica (círculo navy + blob amarelo), com parallax leve e entrada com máscara circular revelando a foto
+- Usar placeholder de retrato profissional; fotos reais serão substituídas depois
+
+**3.2 Serviços em destaque**
+- Headline: "Transformamos seu negócio com soluções contábeis"
+- Subtítulo: "Nosso compromisso é proporcionar maior flexibilidade e eficácia para o crescimento do seu negócio"
+- Carousel de cards de serviço (ex: "Equiparação hospitalar — Mantenha seu hospital em conformidade e otimize seus processos") em card navy com CTA amarelo "CONHEÇA MAIS"
+- Elevar: carousel com drag/swipe fluido, transição com easing físico, indicadores de progresso animados, cards vizinhos parcialmente visíveis com escala reduzida
+- OBRIGATÓRIO: seguir as regras de contenção da seção 0-B — track dentro de viewport com \`overflow: hidden\`, larguras fluidas, scroll-snap nativo no mobile. Este componente causou overflow horizontal na geração anterior e não pode quebrar de novo
+- Foto em moldura de arco ao lado, com parallax
+
+**3.3 Segmentos**
+- Headline: "O suporte contábil que seu segmento merece"
+- Cards: **Saúde** ("Aumente a eficiência da sua prática médica otimizando sua saúde financeira"), **Comércio** ("Controle preciso das finanças, garantindo uma visão clara da gestão do seu comércio"), **Advogado** ("Revolucione seu escritório de advocacia e aumente a precisão financeira")
+- Elevar: em vez de 3 cards brancos genéricos com sombra, use cards com borda fina, hover que eleva sutilmente + linha amarela animada na base + ícone com microanimação. Entrada em viewport com stagger
+
+**3.4 CTA — Abertura de ME**
+- Banner full-width com foto da equipe e overlay navy escuro (gradiente, não overlay chapado)
+- Headline: "Não espere mais, **abra sua ME** com a **segurança** da Consultem"
+- ATENÇÃO: no site atual há um bug em que as palavras animadas do headline se sobrepõem, ficando ilegível. A animação aqui deve ser simples e à prova de falha: fade + translateY por linha, sem trocar palavras no mesmo espaço
+- Texto: "Entendemos que abrir uma Microempresa é crucial para seu sucesso. Por isso, oferecemos um serviço ágil e personalizado para atender a todos os requisitos legais e fiscais."
+- CTA amarelo "ABRIR MINHA ME AGORA"
+- Efeito: leve parallax na foto de fundo (fixa mais lenta que o scroll)
+
+**3.5 Benefícios**
+- Headline: "Transforme desafios financeiros em oportunidades"
+- 3 pilares: **Gestão a um toque** ("Gerencie suas finanças de forma rápida e fácil com nosso app"), **Eficiência operacional** ("Simplifique a administração financeira com processos contábeis otimizados e automatizados"), **Visão clara e acessível** ("Acesse relatórios financeiros detalhados e atualizados instantaneamente")
+- Elevar: ícones em linha (stroke) com animação de desenho (draw-on) ao entrar em viewport, no lugar dos ícones em círculo azul chapado
+
+**3.6 Instagram**
+- Fundo amarelo (manter, é assinatura da marca) com formas orgânicas navy
+- Headline: "Nos siga no Instagram!"
+- Texto: "Acompanhe nosso perfil para obter insights valiosos e ver o que estamos criando diariamente. Nossa página é o lugar ideal para se conectar e aproveitar o melhor que temos a oferecer."
+- CTA navy "SEGUIR A CONSULTEM" → https://instagram.com/consultemcontabilidade
+- Mosaico de posts (placeholders) com rotações sutis e hover que endireita/eleva o card — sensação de "prints espalhados na mesa", com parallax entre eles
+
+**3.7 Blog / Conteúdos**
+- Headline: "Aprofunde seu conhecimento com nossos artigos"
+- Grid de cards de artigo (imagem + título + data + "LER AGORA") — hover com zoom sutil na imagem e underline animado no título
+
+**3.8 CTA final**
+- Banner com foto da equipe + overlay navy em gradiente
+- Headline: "A **Consultem** está pronta para **impulsionar seu sucesso**"
+- Texto: "Conte com uma abordagem estratégica e eficiente para todas as suas necessidades contábeis."
+- CTA amarelo "INICIAR CONSULTORIA HOJE"
+
+**3.9 Footer**
+- Logo + colunas de Contato e Endereço:
+  - E-mail: contato@consultemcontabilidade.com.br
+  - Telefone: (75) 99153-5103
+  - Endereço: Avenida Padre Madureira, nº 29, 1º Andar, Madureira, CEP 48730-000, Conceição do Coité-BA
+  - Instagram: @leonardoocontador e @consultemcontabilidade
+  - Link: Política de privacidade
+- Barra final navy: "© Todos os direitos reservados – Consultem Gestão Contábil"
+
+**Elementos persistentes:**
+- Botão flutuante de WhatsApp (verde, canto inferior direito) com animação de pulso discreta e mensagem pré-preenchida contextual
+- Widget de chat/convite ("Quer consultar nosso melhor preço para o serviço que está buscando?") aparecendo após alguns segundos com animação suave, com botão de fechar
+
+### 4. Efeitos e transições (o grande diferencial do novo site)
+
+- **Smooth scroll** global (estilo Lenis)
+- **Reveals com stagger** em todas as seções ao entrar em viewport (fade + translateY 24–32px, easing cubic-bezier suave) — moderado, nem tudo anima
+- **Split-text** no headline do hero (por palavra) e headlines de seção (por linha)
+- **Parallax em camadas**: formas orgânicas de fundo, fotos e conteúdo em velocidades diferentes
+- **Contadores animados** se houver números/KPIs
+- **Hover states ricos**: botões com preenchimento animado, cards com elevação + linha amarela, links com underline que desliza
+- **Transições entre páginas** (Serviços, Segmentos, Sobre nós): fade/slide suave com curtain navy ou crossfade — nunca corte seco
+- **Navbar reativa ao scroll** (item 2)
+- **Ícones com draw-on animation** na seção de benefícios
+- Respeitar \`prefers-reduced-motion\`: reduzir/desativar animações para quem tem a preferência ativa
+- Performance mobile: animações via transform/opacity apenas, lazy-load de imagens fora da primeira dobra, nada de jank no scroll
+
+### 5. Geração de leads
+
+- Todos os CTAs amarelos levam a: formulário de contato segmentado OU WhatsApp (75) 99153-5103 com mensagem pré-preenchida contextual (ex: no CTA de ME: "Olá! Quero abrir minha ME com a Consultem")
+- Formulário segmentado em /contato: primeiro pergunta o perfil (Quero abrir empresa / Já tenho empresa e quero trocar de contador / Sou profissional da saúde / Outro) e adapta os campos seguintes
+- Página "Abrir conta PJ" como landing focada em conversão, seguindo a mesma identidade
+
+### 6. Páginas
+
+Home completa (seções acima) + páginas internas: Serviços (índice + template de serviço individual), Segmentos (Saúde, Comércio, Advogado — template único parametrizado), Sobre nós, Conteúdos (blog index + template de artigo), Abrir conta PJ, Contato. Todas seguem a mesma identidade e sistema de animação.
+
+### 7. O que evitar
+
+- Texto branco sobre fundo branco/claro em qualquer seção, card ou estado de hover (bug da geração anterior — inaceitável; ver regras da seção 0-A)
+- Qualquer scroll horizontal na página, em qualquer breakpoint — especialmente causado pelo carousel de serviços ou por formas decorativas vazando da seção (bug da geração anterior — inaceitável; ver regras da seção 0-B)
+- Sobreposição de textos em headlines animados (bug do site atual — inaceitável)
+- Cards brancos genéricos com sombra pesada e cantos muito arredondados
+- Ícones em círculo azul chapado estilo clipart
+- Animações bounce/spring exageradas
+- Overlay preto chapado sobre fotos (usar gradientes navy)
+- Fotos de banco de imagens genéricas onde couber placeholder neutro (as fotos reais da equipe serão inseridas depois)
+- Qualquer seção que pareça template de WordPress/Elementor
+
+O resultado deve ser inconfundivelmente a Consultem — mesma marca, mesmas cores, mesma estrutura — mas com a execução de um estúdio digital premium.
+`
       }
     ]
   },
-  {
+    {
     tipo: "prompt",
     titulo: "Prompt: Gestor Financeiro Fácil",
-    resumo: "Prompt completo para gerar um sistema de importação e gestão financeira com IA.",
-    intro: "Use este prompt no Lovable (ou outra ferramenta de geração de apps) para criar o Gestor Financeiro Fácil — um sistema de importação de extratos com categorização automática.",
+    resumo: "Prompt completo para gerar um sistema de envio de títulos a pagar, RLS e exportação bancária TXT.",
+    intro: "Use este prompt no Lovable (ou outra ferramenta de geração de apps) para criar o Gestor Financeiro Fácil — completo com controle de admin, RLS e exportação de remessa.",
     prompts: [
       {
         label: "Prompt do sistema",
-        texto: `Crie um sistema web chamado "Gestor Financeiro Fácil" — uma ferramenta de gestão financeira para pequenas empresas, com foco em importação de extratos bancários.
+        texto: `# Prompt para Lovable — Sistema de Coleta de Títulos a Pagar (v2)
 
-FUNCIONALIDADES PRINCIPAIS:
-1. IMPORTAÇÃO DE EXTRATOS
-   - Upload de arquivos OFX e CSV de extratos bancários
-   - Leitura automática das transações (data, descrição, valor, tipo)
-   - Detecção e bloqueio de lançamentos duplicados
+## Contexto e Objetivo
+Sistema web com dois perfis de usuário, ambos autenticados:
+1. **Cliente** — cria conta/faz login, envia títulos a pagar pelo painel dele e visualiza tudo que já enviou, com filtros.
+2. **Admin** — visualiza envios de todos os clientes e gera arquivo **.txt** em layout bancário para download.
 
-2. CATEGORIZAÇÃO INTELIGENTE
-   - Categorias padrão: Receitas, Fornecedores, Impostos, Folha de Pagamento, Despesas Operacionais, Pró-labore, Tarifas Bancárias
-   - Sugestão automática de categoria pela descrição da transação
-   - Possibilidade de criar categorias personalizadas
-   - Regras salvas: ao categorizar uma vez, aplica nas próximas iguais
+## Stack
+- React + TypeScript + Tailwind CSS
+- Supabase (Postgres, Auth, RLS)
+- Supabase Auth com e-mail/senha para TODOS os usuários (cliente e admin)
 
-3. DASHBOARD
-   - Cards de resumo: saldo do período, total de entradas, total de saídas
-   - Gráfico de barras: entradas x saídas por mês
-   - Gráfico de pizza: despesas por categoria
-   - Filtro por período (mês atual, últimos 3 meses, personalizado)
+---
 
-4. RELATÓRIOS
-   - Fluxo de caixa mensal
-   - Exportação em CSV das transações categorizadas
+## ⚠️ CORREÇÕES OBRIGATÓRIAS (erros da versão anterior — não repetir)
 
-5. TELAS
-   - Login simples
-   - Dashboard, Importar Extrato, Transações (tabela com edição de categoria), Relatórios, Configurações
+Na versão anterior o sistema foi entregue com estes erros em produção:
 
-DESIGN:
-- Visual limpo e profissional, paleta verde-escuro e branco
-- Tabelas legíveis, valores negativos em vermelho e positivos em verde
-- Responsivo, em português do Brasil (moeda R$, datas dd/mm/aaaa)`
+1. **\`POST /rest/v1/rpc/has_role → 404\`**: o frontend chamava uma função RPC \`has_role\` que NUNCA foi criada no banco. Regra: **toda função RPC referenciada no frontend DEVE ser criada via migration SQL antes**. Crie a função \`has_role\` no schema public (definição completa abaixo) e garanta que a migration seja executada.
+
+2. **\`POST /rest/v1/envios → 401 + erro 42501 "new row violates row-level security policy"\`**: as tabelas tinham RLS habilitado mas sem policy de INSERT válida para o fluxo real. Regra: **para cada tabela com RLS, escreva explicitamente as policies de SELECT, INSERT, UPDATE e DELETE** cobrindo cada perfil (cliente e admin), e valide o fluxo completo de ponta a ponta.
+
+3. **Login não funcionava**. Garanta que: o signup crie automaticamente o registro em \`profiles\` via trigger; o e-mail de confirmação esteja DESABILITADO no Supabase Auth (auto-confirm ativado) para o login funcionar imediatamente em ambiente de teste; e o fluxo login → redirect por role funcione.
+
+Antes de considerar entregue, TESTE: criar conta de cliente → logar → enviar títulos → deslogar → logar como admin → ver o envio → baixar TXT. Nenhum erro no console.
+
+---
+
+## Roles e Autenticação
+
+**Tabela \`profiles\`**
+- id (uuid, pk, referencia auth.users.id)
+- nome (text)
+- telefone (text)
+- cnpj_empresa (text)
+- role (text, default 'cliente') — valores: 'cliente' | 'admin'
+- created_at (timestamptz, default now())
+
+**Trigger obrigatória**: ao criar usuário em \`auth.users\`, inserir automaticamente linha em \`profiles\` (função \`handle_new_user\` com \`security definer\`, lendo nome/telefone/cnpj do \`raw_user_meta_data\`).
+
+**Função \`has_role\` (criar via migration, obrigatório):**
+\`\`\`sql
+create or replace function public.has_role(_user_id uuid, _role text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = _user_id and role = _role
+  );
+$$;
+\`\`\`
+
+**Usuários de teste (criar via seed/migration ou instrução de setup):**
+- Admin: \`admin@teste.com\` / senha \`Admin@123\` → role 'admin'
+- Cliente: \`cliente@teste.com\` / senha \`Cliente@123\` → role 'cliente', nome "Cliente Teste", CNPJ "29.245.512/0001-08"
+
+Se não for possível criar usuários via migration, crie uma Edge Function de setup ou documente o SQL exato para eu rodar no SQL Editor do Supabase (incluindo o update da role para admin).
+
+---
+
+## Estrutura de rotas
+- \`/login\` → login (único para cliente e admin; redireciona por role após logar)
+- \`/cadastro\` → criação de conta do cliente (nome, telefone com máscara, CNPJ com validação, e-mail, senha)
+- \`/cliente\` → painel do cliente (dashboard com seus envios)
+- \`/cliente/enviar\` → formulário de envio de títulos
+- \`/cliente/envios/:id\` → detalhe de um envio do próprio cliente
+- \`/admin\` → dashboard admin (todos os envios)
+- \`/admin/envios/:id\` → detalhe de envio com edição e download do TXT
+- \`/admin/configuracoes\` → parâmetros do TXT (cod_agencia, cod_conta)
+
+Proteção de rotas: \`/cliente/*\` exige usuário logado com role 'cliente' (ou admin); \`/admin/*\` exige role 'admin'. Usuário logado acessando \`/login\` é redirecionado para seu painel.
+
+---
+
+## Modelo de dados
+
+**Tabela \`envios\`**
+- id (uuid, pk)
+- user_id (uuid, fk → auth.users.id) — dono do envio
+- created_at (timestamptz, default now())
+- status (text, default 'pendente') — pendente / processado
+
+(nome, telefone e CNPJ agora vêm do \`profiles\` do usuário, não precisam ser repetidos por envio)
+
+**Tabela \`titulos\`**
+- id (uuid, pk)
+- envio_id (uuid, fk → envios.id, on delete cascade)
+- banco (text)
+- fornecedor (text)
+- numero_titulo (text, opcional)
+- valor (numeric)
+- data_vencimento (date)
+- data_pagamento (date)
+- obs (text, opcional)
+- dpcta (text, opcional)
+- created_at (timestamptz, default now())
+
+**Tabela \`configuracoes\`**
+- id (uuid, pk)
+- cod_agencia (text, default '3790')
+- cod_conta (text, default '5428')
+- Inserir uma linha default via migration.
+
+---
+
+## Policies RLS (escrever TODAS explicitamente via migration)
+
+**profiles:**
+- SELECT: usuário vê o próprio profile; admin (\`has_role(auth.uid(),'admin')\`) vê todos
+- UPDATE: usuário atualiza o próprio profile (exceto o campo role); admin atualiza qualquer um
+- INSERT: feito pela trigger \`security definer\` (não precisa policy de insert para o usuário)
+
+**envios:**
+- INSERT: usuário autenticado insere com \`user_id = auth.uid()\` (with check)
+- SELECT: dono do envio (\`user_id = auth.uid()\`) OU admin
+- UPDATE: admin (para marcar como processado); dono NÃO edita após enviar
+- DELETE: apenas admin
+
+**titulos:**
+- INSERT: usuário autenticado, com check de que o \`envio_id\` pertence a um envio com \`user_id = auth.uid()\`
+- SELECT: dono do envio pai OU admin
+- UPDATE/DELETE: apenas admin
+
+**configuracoes:**
+- SELECT/UPDATE: apenas admin
+
+---
+
+## Painel do Cliente (\`/cliente\`)
+
+**Dashboard:**
+- Cards de resumo: total de envios, total de títulos, valor total enviado no mês atual
+- Lista dos envios do próprio cliente: data, quantidade de títulos, valor total, status (pendente/processado)
+- **Filtros**: por mês/ano (select), por banco, por fornecedor (busca texto), por status, por intervalo de datas de vencimento/pagamento
+- Também uma visão "Todos os títulos" (tabela achatada de todos os títulos de todos os envios do cliente) com os mesmos filtros, para ele localizar rapidamente um título específico
+- Clicar em um envio abre \`/cliente/envios/:id\` com a tabela completa (somente leitura)
+
+**Formulário de envio (\`/cliente/enviar\`):**
+Tabela editável dinâmica (botão "+ Adicionar título", opção de remover linha), colunas:
+- Banco (select: Banco do Brasil, Bradesco, Caixa, Sicoob, Cresol, Caixinha + "Outro" com campo livre)
+- Fornecedor (texto, obrigatório)
+- Nº Título (texto, opcional)
+- Valor (máscara de moeda R$, obrigatório)
+- Data de Vencimento (date picker dd/mm/aaaa, obrigatório)
+- Data de Pagamento (date picker dd/mm/aaaa, obrigatório)
+- Obs (texto, opcional)
+- DPCTA (texto curto, opcional)
+
+Botão "Enviar" → cria 1 registro em \`envios\` (user_id = usuário logado) + N em \`titulos\` → tela de confirmação com resumo do que foi enviado.
+
+Design mobile-first, validação inline, feedback de loading.
+
+---
+
+## Painel Admin (\`/admin\`)
+
+- Dashboard: lista de envios de TODOS os clientes (nome do cliente, CNPJ, telefone, data, qtd. títulos, valor total, status)
+- **Filtros**: por cliente (nome/CNPJ), mês/ano, banco, status, período
+- Detalhe do envio (\`/admin/envios/:id\`): tabela completa de títulos com **edição inline** (corrigir erros de digitação do cliente antes de exportar)
+- Botão **"Baixar TXT"** no detalhe do envio
+- Seleção múltipla no dashboard + **"Baixar TXT consolidado"** (vários envios do MESMO cliente em um arquivo; se envios de clientes/CNPJs diferentes forem selecionados, gerar um arquivo por CNPJ ou avisar)
+- Ao baixar, marcar envio(s) como "processado"
+- \`/admin/configuracoes\`: editar cod_agencia e cod_conta
+
+---
+
+## Geração do arquivo TXT
+
+Layout posicional separado por \`|\`:
+
+**Cabeçalho (uma vez, topo do arquivo):**
+\`\`\`
+|0000|{CNPJ_SOMENTE_NUMEROS}|
+\`\`\`
+
+**Para cada título (na ordem de cadastro), dois blocos:**
+\`\`\`
+|6000|X||||
+|6100|{DATA_PAGAMENTO}|{COD_AGENCIA}|{COD_CONTA}|{VALOR}||{DESCRICAO}||||
+\`\`\`
+
+Onde:
+- \`{CNPJ_SOMENTE_NUMEROS}\` = CNPJ do profile do cliente, sem pontuação
+- \`{DATA_PAGAMENTO}\` = formato dd/mm/aaaa
+- \`{COD_AGENCIA}\` / \`{COD_CONTA}\` = da tabela \`configuracoes\` (não vêm do cliente)
+- \`{VALOR}\` = vírgula decimal, sem "R$" (ex.: 810,61)
+- \`{DESCRICAO}\` = campo Obs; se vazio, montar "{FORNECEDOR} {NUMERO_TITULO}", em MAIÚSCULAS e sem acentos/caracteres especiais
+
+Manter exatamente a quantidade de barras \`|\` de cada linha, mesmo com campos vazios entre elas.
+
+Arquivo gerado client-side, nome \`remessa_{CNPJ}_{DATA}.txt\`, UTF-8.
+
+**Exemplo de saída esperada:**
+\`\`\`
+|0000|29245512000108|
+|6000|X||||
+|6100|01/06/2026|3790|5428|810,61||CONTABILIDADE||||
+|6000|X||||
+|6100|01/06/2026|3790|5428|279,55||FERRAGENS NEGRAO COM LTDA 7785102||||
+\`\`\`
+
+---
+
+## Checklist final antes de entregar (executar e confirmar)
+1. Migrations rodadas: tabelas, trigger \`handle_new_user\`, função \`has_role\`, todas as policies RLS, linha default em \`configuracoes\`
+2. Auto-confirm de e-mail ativado no Supabase Auth
+3. Usuários de teste criados (admin@teste.com e cliente@teste.com) com roles corretas
+4. Fluxo cliente: cadastro → login → enviar títulos → ver na lista → filtrar por mês e banco → SEM erros no console
+5. Fluxo admin: login → ver envio do cliente → editar um título → baixar TXT → conferir formato → envio marcado como processado
+6. Cliente NÃO consegue ver envios de outros clientes; cliente NÃO acessa /admin
+
+## Observações
+- Datas e moeda sempre em pt-BR
+- Validar CNPJ (dígito verificador) no cadastro
+- Loading/feedback visual em todas as ações assíncronas
+`
       }
     ]
   },
