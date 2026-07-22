@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entregáveis — Palestra IA para Contadores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0D231C;          /* verde-tinta profundo (fundo) */
+    --ink-soft:#122A22;
+    --paper:#F6F1E7;        /* creme de recibo */
+    --paper-dim:#EDE6D8;
+    --stamp:#C9402F;        /* vermelho de carimbo */
+    --gold:#D9A441;         /* dourado contábil */
+    --line:#1E3A31;
+    --mono:'IBM Plex Mono',monospace;
+    --sans:'Archivo',sans-serif;
+    --disp:'Archivo Black',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:var(--sans);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(1200px 600px at 80% -10%, rgba(217,164,65,.07), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(201,64,47,.06), transparent 60%);
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:0 24px}
+
+  /* ---------- HERO ---------- */
+  header{padding:72px 0 48px;border-bottom:1px dashed var(--line)}
+  .eyebrow{
+    font-family:var(--mono);font-size:12px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--gold);
+    display:inline-flex;align-items:center;gap:10px;margin-bottom:22px;
+  }
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--gold)}
+  h1{
+    font-family:var(--disp);
+    font-size:clamp(34px,5.4vw,62px);
+    line-height:1.04;letter-spacing:-.01em;
+    max-width:15ch;
+  }
+  h1 em{font-style:normal;color:var(--gold)}
+  .lede{
+    margin-top:20px;max-width:52ch;color:#C9D4CE;font-size:17px;
+  }
+  .lede strong{color:var(--paper)}
+  .hero-meta{
+    margin-top:28px;display:flex;gap:24px;flex-wrap:wrap;
+    font-family:var(--mono);font-size:12.5px;color:#8FA69C;
+  }
+  .hero-meta span{display:flex;align-items:center;gap:8px}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--stamp)}
+
+  /* ---------- GRID DE VOUCHERS ---------- */
+  main{padding:56px 0 80px}
+  .grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));
+    gap:26px;
+  }
+  .voucher{
+    position:relative;background:var(--paper);color:#1D2320;
+    border-radius:10px 10px 0 0;
+    cursor:pointer;border:none;text-align:left;width:100%;
+    font-family:var(--sans);
+    transition:transform .18s ease, box-shadow .18s ease;
+    box-shadow:0 6px 22px rgba(0,0,0,.28);
+    display:flex;flex-direction:column;
+  }
+  .voucher:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(0,0,0,.4)}
+  .voucher:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+  /* borda serrilhada inferior — assinatura do recibo */
+  .voucher::after{
+    content:"";position:absolute;left:0;right:0;bottom:-9px;height:10px;
+    background:radial-gradient(circle at 8px -2px, transparent 7px, var(--paper) 7.5px);
+    background-size:16px 10px;background-repeat:repeat-x;
+  }
+  .v-top{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:16px 20px;border-bottom:1px dashed #C9BFA9;
+  }
+  .tag{
+    font-family:var(--mono);font-size:10.5px;font-weight:600;
+    letter-spacing:.14em;text-transform:uppercase;
+    padding:4px 9px;border-radius:3px;
+  }
+  .tag-prompt{background:#123227;color:#F6F1E7}
+  .tag-trial{background:var(--stamp);color:#FFF3EC}
+  .v-num{font-family:var(--mono);font-size:12px;color:#9A8F76}
+  .v-body{padding:20px 20px 26px;flex:1;display:flex;flex-direction:column}
+  .v-body h2{
+    font-family:var(--disp);font-size:19.5px;line-height:1.2;letter-spacing:0;
+    margin-bottom:8px;color:#152019;
+  }
+  .v-body p{font-size:14px;color:#5A6259;flex:1}
+  .v-cta{
+    margin-top:18px;font-family:var(--mono);font-size:13px;font-weight:600;
+    color:var(--stamp);display:inline-flex;align-items:center;gap:6px;
+  }
+  .voucher:hover .v-cta{gap:10px}
+  .v-cta::after{content:"→";transition:transform .15s}
+
+  /* ---------- MODAL ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(7,18,14,.78);
+    backdrop-filter:blur(4px);display:none;align-items:flex-start;
+    justify-content:center;padding:40px 18px;overflow-y:auto;z-index:50;
+  }
+  .overlay.open{display:flex;animation:fade .18s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .modal{
+    background:var(--paper);color:#1D2320;max-width:760px;width:100%;
+    border-radius:10px;position:relative;margin:auto;
+    animation:pop .22s cubic-bezier(.2,.9,.3,1.2);
+    box-shadow:0 30px 80px rgba(0,0,0,.5);
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+  .m-head{
+    padding:26px 30px 18px;border-bottom:1px dashed #C9BFA9;
+    display:flex;justify-content:space-between;gap:16px;align-items:flex-start;
+  }
+  .m-head h3{font-family:var(--disp);font-size:22px;line-height:1.2;max-width:26ch}
+  .m-close{
+    background:#152019;color:var(--paper);border:none;border-radius:6px;
+    width:36px;height:36px;font-size:17px;cursor:pointer;flex-shrink:0;
+    font-family:var(--sans);
+  }
+  .m-close:hover{background:var(--stamp)}
+  .m-close:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+  .m-body{padding:24px 30px 32px}
+  .m-body > p{font-size:15px;color:#4C554D;margin-bottom:18px;max-width:62ch}
+
+  /* bloco de prompt */
+  .prompt-block{position:relative;margin-bottom:22px}
+  .prompt-label{
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:#9A8F76;margin-bottom:8px;display:block;
+  }
+  .prompt-box{
+    background:#0F2019;color:#DCE8E1;border-radius:8px;
+    padding:20px 18px;font-family:var(--mono);font-size:13px;line-height:1.65;
+    white-space:pre-wrap;max-height:340px;overflow-y:auto;
+    border:1px solid #1E3A31;
+  }
+  .copy-btn{
+    position:absolute;top:34px;right:12px;
+    background:var(--gold);color:#241A05;border:none;border-radius:6px;
+    font-family:var(--mono);font-size:12px;font-weight:600;
+    padding:8px 14px;cursor:pointer;display:inline-flex;gap:6px;align-items:center;
+    box-shadow:0 3px 10px rgba(0,0,0,.35);
+    transition:background .15s;
+  }
+  .copy-btn:hover{background:#E9B850}
+  .copy-btn.ok{background:#2E7D5B;color:#EDFBF3}
+  .copy-btn:focus-visible{outline:3px solid #152019;outline-offset:2px}
+
+  /* trial */
+  .trial-steps{list-style:none;margin:6px 0 24px;display:grid;gap:12px}
+  .trial-steps li{
+    display:flex;gap:14px;align-items:flex-start;font-size:15px;color:#3B443C;
+  }
+  .step-n{
+    font-family:var(--mono);font-size:12px;font-weight:600;color:var(--paper);
+    background:#152019;border-radius:50%;width:26px;height:26px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
+  }
+  .trial-cta{
+    display:inline-flex;align-items:center;gap:10px;
+    background:var(--stamp);color:#FFF3EC;text-decoration:none;
+    font-family:var(--sans);font-weight:700;font-size:15.5px;
+    padding:15px 26px;border-radius:8px;transition:transform .15s, box-shadow .15s;
+    box-shadow:0 6px 18px rgba(201,64,47,.35);
+  }
+  .trial-cta:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(201,64,47,.45)}
+  .trial-cta:focus-visible{outline:3px solid #152019;outline-offset:3px}
+  .trial-note{margin-top:14px;font-family:var(--mono);font-size:12px;color:#9A8F76}
+
+  /* carimbo */
+  .stamp{
+    position:absolute;top:18px;right:56px;transform:rotate(-9deg);
+    border:2.5px solid var(--stamp);color:var(--stamp);
+    font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.16em;
+    text-transform:uppercase;padding:5px 10px;border-radius:4px;opacity:.85;
+    pointer-events:none;user-select:none;
+  }
+
+  footer{
+    border-top:1px dashed var(--line);padding:34px 0 46px;
+    font-family:var(--mono);font-size:12.5px;color:#7E948A;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  }
+  footer a{color:var(--gold);text-decoration:none}
+
+  @media(max-width:560px){
+    header{padding:52px 0 36px}
+    .m-head,.m-body{padding-left:20px;padding-right:20px}
+    .stamp{display:none}
+    .copy-btn{position:static;margin-top:10px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Palestra · IA para Contadores</span>
+    <h1>Seus entregáveis<br>estão <em>liberados</em>.</h1>
+    <p class="lede">Tudo o que foi prometido na palestra está aqui: <strong>prompts prontos para copiar</strong> e <strong>acessos de 7 dias grátis</strong> às ferramentas apresentadas. Toque em um card para abrir.</p>
+    <div class="hero-meta">
+      <span><span class="dot"></span>6 entregáveis disponíveis</span>
+      <span><span class="dot"></span>Acesso imediato</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="grid" id="grid"></div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;width:100%">
+    <span>© 2026 · IA para Contadores</span>
+    <span>Dúvidas? <a href="https://wa.me/55SEUNUMERO">Fale no WhatsApp</a></span>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <div class="stamp">Entregável liberado</div>
+    <div class="m-head">
+      <h3 id="modalTitle"></h3>
+      <button class="m-close" id="closeBtn" aria-label="Fechar">✕</button>
+    </div>
+    <div class="m-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   CONFIGURAÇÃO DOS ENTREGÁVEIS
+   Edite os textos, prompts e links (wa.me / URLs) aqui.
+   ========================================================= */
+const WHATSAPP = "https://wa.me/55SEUNUMERO"; // <-- troque pelo seu número
+
+const ENTREGAVEIS = [
+  {
+    tipo: "prompt",
+    titulo: "Prompt: Site do seu escritório no Lovable",
+    resumo: "Cole no Lovable e gere um site profissional para o seu escritório contábil em minutos.",
+    intro: "Copie o prompt abaixo, acesse lovable.dev, cole no campo de criação e ajuste o nome do escritório e as cores antes de enviar.",
+    prompts: [
+      {
+        label: "Prompt para o Lovable",
+        texto: `Crie um site institucional moderno e profissional para um escritório de contabilidade chamado [NOME DO ESCRITÓRIO], localizado em [CIDADE/UF].
+
+ESTRUTURA DO SITE:
+1. Hero com headline forte sobre contabilidade consultiva com tecnologia e IA, subtítulo e botão "Fale com um especialista" (link para WhatsApp: [SEU LINK WA.ME])
+2. Seção "Serviços" com cards: Abertura de Empresa, Contabilidade Mensal, Planejamento Tributário, Departamento Pessoal, BPO Financeiro e Consultoria com IA
+3. Seção "Por que nos escolher" com 4 diferenciais (atendimento humanizado, tecnologia, agilidade, transparência)
+4. Seção "Depoimentos" com 3 depoimentos de clientes
+5. Seção "Sobre" com breve história do escritório
+6. FAQ com 5 perguntas frequentes sobre troca de contador, MEI, Simples Nacional
+7. Rodapé com endereço, CRC, redes sociais e botão flutuante de WhatsApp
+
+DESIGN:
+- Paleta: azul-escuro profissional, branco e um tom dourado como destaque
+- Tipografia moderna e legível, visual clean e confiável
+- Totalmente responsivo (mobile-first)
+- Animações suaves ao rolar a página
+
+IMPORTANTE:
+- Todos os botões de contato devem apontar para o WhatsApp
+- Textos em português do Brasil, tom profissional e acolhedor
+- Otimizado para SEO local (contabilidade em [CIDADE])`
+      }
+    ]
+  },
+  {
+    tipo: "prompt",
+    titulo: "Prompt: Gestor Financeiro Fácil",
+    resumo: "Prompt completo para gerar um sistema de importação e gestão financeira com IA.",
+    intro: "Use este prompt no Lovable (ou outra ferramenta de geração de apps) para criar o Gestor Financeiro Fácil — um sistema de importação de extratos com categorização automática.",
+    prompts: [
+      {
+        label: "Prompt do sistema",
+        texto: `Crie um sistema web chamado "Gestor Financeiro Fácil" — uma ferramenta de gestão financeira para pequenas empresas, com foco em importação de extratos bancários.
+
+FUNCIONALIDADES PRINCIPAIS:
+1. IMPORTAÇÃO DE EXTRATOS
+   - Upload de arquivos OFX e CSV de extratos bancários
+   - Leitura automática das transações (data, descrição, valor, tipo)
+   - Detecção e bloqueio de lançamentos duplicados
+
+2. CATEGORIZAÇÃO INTELIGENTE
+   - Categorias padrão: Receitas, Fornecedores, Impostos, Folha de Pagamento, Despesas Operacionais, Pró-labore, Tarifas Bancárias
+   - Sugestão automática de categoria pela descrição da transação
+   - Possibilidade de criar categorias personalizadas
+   - Regras salvas: ao categorizar uma vez, aplica nas próximas iguais
+
+3. DASHBOARD
+   - Cards de resumo: saldo do período, total de entradas, total de saídas
+   - Gráfico de barras: entradas x saídas por mês
+   - Gráfico de pizza: despesas por categoria
+   - Filtro por período (mês atual, últimos 3 meses, personalizado)
+
+4. RELATÓRIOS
+   - Fluxo de caixa mensal
+   - Exportação em CSV das transações categorizadas
+
+5. TELAS
+   - Login simples
+   - Dashboard, Importar Extrato, Transações (tabela com edição de categoria), Relatórios, Configurações
+
+DESIGN:
+- Visual limpo e profissional, paleta verde-escuro e branco
+- Tabelas legíveis, valores negativos em vermelho e positivos em verde
+- Responsivo, em português do Brasil (moeda R$, datas dd/mm/aaaa)`
+      }
+    ]
+  },
+  {
+    tipo: "trial",
+    titulo: "7 dias grátis · Sistema de IA para Contadores",
+    resumo: "Teste por 7 dias o sistema de IA apresentado na palestra, sem compromisso.",
+    intro: "Seu período de teste é liberado manualmente para garantir o onboarding correto. Siga os passos:",
+    passos: [
+      "Clique no botão abaixo para abrir o WhatsApp.",
+      "Envie a mensagem já preenchida com seu nome e escritório.",
+      "Você recebe o acesso e um vídeo de primeiros passos em até 24h."
+    ],
+    ctaTexto: "Quero meus 7 dias grátis",
+    ctaLink: WHATSAPP + "?text=" + encodeURIComponent("Olá! Estive na palestra de IA para Contadores e quero ativar meus 7 dias grátis do Sistema de IA para Contadores. Meu nome é: "),
+    nota: "Sem cartão de crédito. O teste expira automaticamente após 7 dias."
+  },
+  {
+    tipo: "trial",
+    titulo: "7 dias grátis · Gestor Contábil",
+    resumo: "Acesso completo ao Gestor Contábil por uma semana, com todos os módulos liberados.",
+    intro: "Ative seu acesso de teste ao Gestor Contábil:",
+    passos: [
+      "Clique no botão abaixo para abrir o WhatsApp.",
+      "Envie a mensagem preenchida com seu nome e escritório.",
+      "Receba login, senha e o tour guiado da ferramenta."
+    ],
+    ctaTexto: "Ativar 7 dias do Gestor Contábil",
+    ctaLink: WHATSAPP + "?text=" + encodeURIComponent("Olá! Estive na palestra de IA para Contadores e quero ativar meus 7 dias grátis do Gestor Contábil. Meu nome é: "),
+    nota: "Sem cartão de crédito. Suporte incluso durante o período de teste."
+  },
+  {
+    tipo: "trial",
+    titulo: "7 dias grátis · Fator R",
+    resumo: "Calcule e monitore o Fator R dos seus clientes do Simples Nacional por 7 dias.",
+    intro: "Libere seu teste da ferramenta de Fator R:",
+    passos: [
+      "Clique no botão abaixo para abrir o WhatsApp.",
+      "Envie a mensagem preenchida com seu nome e escritório.",
+      "Receba o acesso e um exemplo prático de simulação."
+    ],
+    ctaTexto: "Ativar 7 dias do Fator R",
+    ctaLink: WHATSAPP + "?text=" + encodeURIComponent("Olá! Estive na palestra de IA para Contadores e quero ativar meus 7 dias grátis da ferramenta de Fator R. Meu nome é: "),
+    nota: "Sem cartão de crédito. Ideal para clientes do Anexo III e V."
+  },
+  {
+    tipo: "prompt",
+    titulo: "Prompts GPT para Contadores",
+    resumo: "Coleção de prompts prontos para usar no ChatGPT no dia a dia do escritório.",
+    intro: "Copie o prompt que precisar e cole no ChatGPT. Substitua os campos entre [COLCHETES] pelas informações do seu cliente.",
+    prompts: [
+      {
+        label: "1 · Explicar imposto para o cliente",
+        texto: `Aja como um contador experiente e didático. Explique para um cliente leigo, dono de [TIPO DE EMPRESA], de forma simples e sem termos técnicos, o que é [IMPOSTO/OBRIGAÇÃO], por que ele precisa pagar, qual o prazo e o que acontece se atrasar. Use no máximo 5 parágrafos curtos e um tom acolhedor. Finalize com uma frase tranquilizadora dizendo que o escritório cuida de tudo.`
+      },
+      {
+        label: "2 · Análise de enquadramento tributário",
+        texto: `Aja como um especialista em planejamento tributário brasileiro. Analise o melhor regime tributário (Simples Nacional, Lucro Presumido ou Lucro Real) para uma empresa com estas características:
+
+- Atividade: [ATIVIDADE/CNAE]
+- Faturamento anual estimado: R$ [VALOR]
+- Folha de pagamento mensal: R$ [VALOR]
+- Margem de lucro média: [X]%
+
+Monte uma tabela comparativa com a carga tributária estimada em cada regime, aponte o mais vantajoso e liste 3 pontos de atenção. Ao final, deixe claro que a análise é uma estimativa e depende de validação com os dados reais.`
+      },
+      {
+        label: "3 · E-mail de cobrança de documentos",
+        texto: `Escreva um e-mail profissional, educado e objetivo para o cliente [NOME], solicitando o envio dos seguintes documentos pendentes para o fechamento do mês de [MÊS]: [LISTA DE DOCUMENTOS]. Reforce o prazo de envio até [DATA], explique em uma frase por que o atraso impacta as obrigações da empresa e finalize se colocando à disposição. Tom cordial, sem parecer bronca.`
+      },
+      {
+        label: "4 · Resumo de reunião com cliente",
+        texto: `Aja como assistente de um escritório contábil. Transforme as anotações abaixo em uma ata de reunião profissional com: participantes, data, pauta, decisões tomadas, pendências com responsável e prazo, e próximos passos. Formato limpo, pronto para enviar ao cliente por e-mail.
+
+ANOTAÇÕES:
+[COLE AQUI SUAS ANOTAÇÕES]`
+      },
+      {
+        label: "5 · Post para redes sociais do escritório",
+        texto: `Crie 3 opções de post para Instagram de um escritório de contabilidade sobre o tema: [TEMA — ex.: prazo do IRPF, mudança no Simples, dica de fluxo de caixa]. Cada opção deve ter: um gancho forte na primeira linha, texto de até 120 palavras em linguagem simples, 1 chamada para ação convidando a chamar no WhatsApp e 5 hashtags relevantes. Tom: profissional, próximo e confiável.`
+      }
+    ]
+  }
+];
+
+/* =========================================================
+   RENDERIZAÇÃO — não precisa editar daqui para baixo
+   ========================================================= */
+const grid = document.getElementById("grid");
+const overlay = document.getElementById("overlay");
+const modalTitle = document.getElementById("modalTitle");
+const modalBody = document.getElementById("modalBody");
+const closeBtn = document.getElementById("closeBtn");
+let lastFocus = null;
+
+ENTREGAVEIS.forEach((item, i) => {
+  const btn = document.createElement("button");
+  btn.className = "voucher";
+  btn.innerHTML = `
+    <div class="v-top">
+      <span class="tag ${item.tipo === "prompt" ? "tag-prompt" : "tag-trial"}">
+        ${item.tipo === "prompt" ? "Prompt" : "7 dias grátis"}
+      </span>
+      <span class="v-num">Nº ${String(i + 1).padStart(3, "0")}</span>
+    </div>
+    <div class="v-body">
+      <h2>${item.titulo}</h2>
+      <p>${item.resumo}</p>
+      <span class="v-cta">${item.tipo === "prompt" ? "Ver e copiar" : "Ativar acesso"}</span>
+    </div>`;
+  btn.addEventListener("click", () => openModal(item));
+  grid.appendChild(btn);
+});
+
+function openModal(item) {
+  lastFocus = document.activeElement;
+  modalTitle.textContent = item.titulo;
+  modalBody.innerHTML = "";
+
+  if (item.intro) {
+    const p = document.createElement("p");
+    p.textContent = item.intro;
+    modalBody.appendChild(p);
+  }
+
+  if (item.tipo === "prompt") {
+    item.prompts.forEach(pr => {
+      const block = document.createElement("div");
+      block.className = "prompt-block";
+      const label = document.createElement("span");
+      label.className = "prompt-label";
+      label.textContent = pr.label;
+      const box = document.createElement("div");
+      box.className = "prompt-box";
+      box.textContent = pr.texto;
+      const copy = document.createElement("button");
+      copy.className = "copy-btn";
+      copy.textContent = "Copiar";
+      copy.addEventListener("click", () => copiar(pr.texto, copy));
+      block.append(label, copy, box);
+      modalBody.appendChild(block);
+    });
+  } else {
+    const ol = document.createElement("ol");
+    ol.className = "trial-steps";
+    item.passos.forEach((passo, idx) => {
+      const li = document.createElement("li");
+      li.innerHTML = `<span class="step-n">${idx + 1}</span><span>${passo}</span>`;
+      ol.appendChild(li);
+    });
+    const cta = document.createElement("a");
+    cta.className = "trial-cta";
+    cta.href = item.ctaLink;
+    cta.target = "_blank";
+    cta.rel = "noopener";
+    cta.textContent = item.ctaTexto + " →";
+    const nota = document.createElement("p");
+    nota.className = "trial-note";
+    nota.textContent = item.nota || "";
+    modalBody.append(ol, cta, nota);
+  }
+
+  overlay.classList.add("open");
+  document.body.style.overflow = "hidden";
+  closeBtn.focus();
+}
+
+function closeModal() {
+  overlay.classList.remove("open");
+  document.body.style.overflow = "";
+  if (lastFocus) lastFocus.focus();
+}
+
+async function copiar(texto, btn) {
+  try {
+    await navigator.clipboard.writeText(texto);
+  } catch (e) {
+    // fallback para contextos sem clipboard API
+    const ta = document.createElement("textarea");
+    ta.value = texto;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+  const original = btn.textContent;
+  btn.textContent = "✓ Copiado!";
+  btn.classList.add("ok");
+  setTimeout(() => {
+    btn.textContent = original;
+    btn.classList.remove("ok");
+  }, 2200);
+}
+
+closeBtn.addEventListener("click", closeModal);
+overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(); });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && overlay.classList.contains("open")) closeModal();
+});
+</script>
+</body>
+</html>
