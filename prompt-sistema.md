@@ -56,7 +56,7 @@ $$;
 
 **Usuários de teste (criar via seed/migration ou instrução de setup):**
 - Admin: `admin@teste.com` / senha `Admin@123` → role 'admin'
-- Cliente: `cliente@teste.com` / senha `Cliente@123` → role 'cliente', nome "Cliente Teste", CNPJ "29.245.512/0001-08"
+- Cliente: `cliente@teste.com` / senha `Cliente@123` → role 'cliente', nome "Cliente Teste", CNPJ "[CNPJ do Cliente (com pontos)]"
 
 Se não for possível criar usuários via migration, crie uma Edge Function de setup ou documente o SQL exato para eu rodar no SQL Editor do Supabase (incluindo o update da role para admin).
 
@@ -101,8 +101,8 @@ Proteção de rotas: `/cliente/*` exige usuário logado com role 'cliente' (ou a
 
 **Tabela `configuracoes`**
 - id (uuid, pk)
-- cod_agencia (text, default '3790')
-- cod_conta (text, default '5428')
+- cod_agencia (text, default '[Preencha com o código da agência padrão (ex: 3790)]')
+- cod_conta (text, default '[Preencha com o número da conta padrão (ex: 5428)]')
 - Inserir uma linha default via migration.
 
 ---
@@ -196,11 +196,11 @@ Arquivo gerado client-side, nome `remessa_{CNPJ}_{DATA}.txt`, UTF-8.
 
 **Exemplo de saída esperada:**
 ```
-|0000|29245512000108|
+|0000|[CNPJ_DO_CLIENTE_APENAS_NUMEROS]|
 |6000|X||||
-|6100|01/06/2026|3790|5428|810,61||CONTABILIDADE||||
+|6100|01/06/2026|[COD_AGENCIA]|[COD_CONTA]|810,61||CONTABILIDADE||||
 |6000|X||||
-|6100|01/06/2026|3790|5428|279,55||FERRAGENS NEGRAO COM LTDA 7785102||||
+|6100|01/06/2026|[COD_AGENCIA]|[COD_CONTA]|279,55||[FORNECEDOR_DE_EXEMPLO_LTDA]||||
 ```
 
 ---

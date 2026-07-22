@@ -1,8 +1,8 @@
-# Prompt para Lovable.dev — Novo site Consultem Contabilidade (v2, com regras anti-bug)
+# Prompt para Lovable.dev — Novo site [Nome da sua Contabilidade] (v2, com regras anti-bug)
 
 ## PROMPT (copiar tudo abaixo desta linha)
 
-Você vai construir o novo site institucional da **Consultem — Gestão Contábil de Empresas e Negócios**, escritório de contabilidade em Conceição do Coité-BA. Já existe um site atual com identidade visual consolidada e arquitetura de informação definida — sua missão é **recriar essa mesma estrutura e identidade, mas com execução visual e técnica de nível muito superior**: animações fluidas, transições modernas, microinterações refinadas. O site atual parece um template de WordPress; o novo deve parecer um produto digital feito sob medida.
+Você vai construir o novo site institucional da **[Nome da sua Contabilidade]**, escritório de contabilidade em [Sua Cidade-UF]. Já existe um site atual com identidade visual consolidada e arquitetura de informação definida — sua missão é **recriar essa mesma estrutura e identidade, mas com execução visual e técnica de nível muito superior**: animações fluidas, transições modernas, microinterações refinadas. O site atual parece um template de WordPress; o novo deve parecer um produto digital feito sob medida.
 
 Objetivo duplo: autoridade institucional + geração de leads (WhatsApp e formulários).
 
@@ -100,7 +100,7 @@ Melhorias na navbar:
 - Fundo amarelo (manter, é assinatura da marca) com formas orgânicas navy
 - Headline: "Nos siga no Instagram!"
 - Texto: "Acompanhe nosso perfil para obter insights valiosos e ver o que estamos criando diariamente. Nossa página é o lugar ideal para se conectar e aproveitar o melhor que temos a oferecer."
-- CTA navy "SEGUIR A CONSULTEM" → https://instagram.com/consultemcontabilidade
+- CTA navy "SEGUIR A CONTABILIDADE" → [Preencha com a URL do seu Instagram]
 - Mosaico de posts (placeholders) com rotações sutis e hover que endireita/eleva o card — sensação de "prints espalhados na mesa", com parallax entre eles
 
 **3.7 Blog / Conteúdos**
@@ -109,18 +109,18 @@ Melhorias na navbar:
 
 **3.8 CTA final**
 - Banner com foto da equipe + overlay navy em gradiente
-- Headline: "A **Consultem** está pronta para **impulsionar seu sucesso**"
+- Headline: "A **[Nome da sua Contabilidade]** está pronta para **impulsionar seu sucesso**"
 - Texto: "Conte com uma abordagem estratégica e eficiente para todas as suas necessidades contábeis."
 - CTA amarelo "INICIAR CONSULTORIA HOJE"
 
 **3.9 Footer**
 - Logo + colunas de Contato e Endereço:
-  - E-mail: contato@consultemcontabilidade.com.br
-  - Telefone: (75) 99153-5103
-  - Endereço: Avenida Padre Madureira, nº 29, 1º Andar, Madureira, CEP 48730-000, Conceição do Coité-BA
-  - Instagram: @leonardoocontador e @consultemcontabilidade
+  - E-mail: [Preencha com o e-mail geral do seu escritório]
+  - Telefone: [Preencha com o WhatsApp/telefone do seu escritório]
+  - Endereço: [Preencha com o seu endereço completo]
+  - Instagram: [@instagram_do_contador] e [@instagram_da_contabilidade]
   - Link: Política de privacidade
-- Barra final navy: "© Todos os direitos reservados – Consultem Gestão Contábil"
+- Barra final navy: "© Todos os direitos reservados – [Nome da sua Contabilidade]"
 
 **Elementos persistentes:**
 - Botão flutuante de WhatsApp (verde, canto inferior direito) com animação de pulso discreta e mensagem pré-preenchida contextual
@@ -142,7 +142,7 @@ Melhorias na navbar:
 
 ### 5. Geração de leads
 
-- Todos os CTAs amarelos levam a: formulário de contato segmentado OU WhatsApp (75) 99153-5103 com mensagem pré-preenchida contextual (ex: no CTA de ME: "Olá! Quero abrir minha ME com a Consultem")
+- Todos os CTAs amarelos levam a: formulário de contato segmentado OU WhatsApp [Preencha com o WhatsApp/telefone do seu escritório] com mensagem pré-preenchida contextual (ex: no CTA de ME: "Olá! Quero abrir minha ME com a [Nome da sua Contabilidade]")
 - Formulário segmentado em /contato: primeiro pergunta o perfil (Quero abrir empresa / Já tenho empresa e quero trocar de contador / Sou profissional da saúde / Outro) e adapta os campos seguintes
 - Página "Abrir conta PJ" como landing focada em conversão, seguindo a mesma identidade
 
@@ -162,4 +162,4 @@ Home completa (seções acima) + páginas internas: Serviços (índice + templat
 - Fotos de banco de imagens genéricas onde couber placeholder neutro (as fotos reais da equipe serão inseridas depois)
 - Qualquer seção que pareça template de WordPress/Elementor
 
-O resultado deve ser inconfundivelmente a Consultem — mesma marca, mesmas cores, mesma estrutura — mas com a execução de um estúdio digital premium.
+O resultado deve ser inconfundivelmente a [Nome da sua Contabilidade] — mesma marca, mesmas cores, mesma estrutura — mas com a execução de um estúdio digital premium.
